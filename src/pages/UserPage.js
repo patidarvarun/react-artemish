@@ -2,6 +2,8 @@ import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
 import { sentenceCase } from 'change-case';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 // @mui
 import {
   Card,
@@ -34,12 +36,12 @@ import USERLIST from '../_mock/user';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
+  { id: 'id', label: 'ID', alignRight: false },
   { id: 'name', label: 'Name', alignRight: false },
-  { id: 'company', label: 'Company', alignRight: false },
-  { id: 'role', label: 'Role', alignRight: false },
-  { id: 'isVerified', label: 'Verified', alignRight: false },
+  { id: 'image', label: 'Image', alignRight: false },
+  { id: 'type', label: 'Type', alignRight: false },
   { id: 'status', label: 'Status', alignRight: false },
-  { id: '' },
+  { id: 'action', label: 'Action', alignRight: false },
 ];
 
 // ----------------------------------------------------------------------
@@ -87,6 +89,7 @@ export default function UserPage() {
   const [filterName, setFilterName] = useState('');
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const navigate = useNavigate();
 
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
@@ -134,12 +137,21 @@ export default function UserPage() {
     setPage(0);
     setRowsPerPage(parseInt(event.target.value, 10));
   };
+  const handleNew = () => {
+    navigate('/dashboard/addNew');
+  };
 
   const handleFilterByName = (event) => {
     setPage(0);
     setFilterName(event.target.value);
   };
 
+  const handleEdit = (event) => {
+    console.log('@@@@@@@@@@@@@@@@@edit', event.target.value);
+  };
+  const handleDelete = (event) => {
+    console.log('##############delete', event.target.value);
+  };
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
 
   const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
@@ -149,16 +161,16 @@ export default function UserPage() {
   return (
     <>
       <Helmet>
-        <title> User | Minimal UI </title>
+        <title> Product</title>
       </Helmet>
 
       <Container>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
-            User
+            Product List
           </Typography>
-          <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
-            New User
+          <Button onClick={handleNew} variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
+            New Product
           </Button>
         </Stack>
 
@@ -179,7 +191,7 @@ export default function UserPage() {
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, role, status, company, avatarUrl, isVerified } = row;
+                    const { id, name, image, type, status, avatarUrl, Action } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
@@ -188,6 +200,7 @@ export default function UserPage() {
                           <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
                         </TableCell>
 
+                        <TableCell align="left">{id}</TableCell>
                         <TableCell component="th" scope="row" padding="none">
                           <Stack direction="row" alignItems="center" spacing={2}>
                             <Avatar alt={name} src={avatarUrl} />
@@ -197,11 +210,9 @@ export default function UserPage() {
                           </Stack>
                         </TableCell>
 
-                        <TableCell align="left">{company}</TableCell>
+                        <TableCell align="left">{image}</TableCell>
 
-                        <TableCell align="left">{role}</TableCell>
-
-                        <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
+                        <TableCell align="left">{type ? 'Yes' : 'No'}</TableCell>
 
                         <TableCell align="left">
                           <Label color={(status === 'banned' && 'error') || 'success'}>{sentenceCase(status)}</Label>
@@ -279,12 +290,12 @@ export default function UserPage() {
           },
         }}
       >
-        <MenuItem>
+        <MenuItem onClick={handleEdit}>
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Edit
         </MenuItem>
 
-        <MenuItem sx={{ color: 'error.main' }}>
+        <MenuItem sx={{ color: 'error.main' }} onClick={handleDelete}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
           Delete
         </MenuItem>

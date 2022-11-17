@@ -39,7 +39,7 @@ export default function LanguagePopover() {
   return (
     <>
       <IconButton
-        onClick={handleOpen}
+        // onClick={handleOpen}
         sx={{
           padding: 0,
           width: 44,
@@ -49,7 +49,10 @@ export default function LanguagePopover() {
           }),
         }}
       >
-        <img src={LANGS[0].icon} alt={LANGS[0].label} />
+        <img
+          src="https://upload.wikimedia.org/wikipedia/en/thumb/4/41/Flag_of_India.svg/1200px-Flag_of_India.svg.png"
+          alt="immage"
+        />
       </IconButton>
 
       <Popover
