@@ -74,6 +74,18 @@ function applySortFilter(array, comparator, query) {
   }
   return stabilizedThis.map((el) => el[0]);
 }
+function applyTypeFilter(array, comparator, query) {
+  const stabilizedThis = array.map((el, index) => [el, index]);
+  stabilizedThis.sort((a, b) => {
+    const order = comparator(a[0], b[0]);
+    if (order !== 0) return order;
+    return a[1] - b[1];
+  });
+  if (query) {
+    return filter(array, (_user) => _user.type.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+  }
+  return stabilizedThis.map((el) => el[0]);
+}
 
 export default function UserPage() {
   const [open, setOpen] = useState(null);
@@ -87,6 +99,8 @@ export default function UserPage() {
   const [orderBy, setOrderBy] = useState('name');
 
   const [filterName, setFilterName] = useState('');
+  const [filterType, setFilterType] = useState('');
+  const [count, setCount] = useState('');
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const navigate = useNavigate();
@@ -145,6 +159,10 @@ export default function UserPage() {
     setPage(0);
     setFilterName(event.target.value);
   };
+  const handleFilterByType = (event) => {
+    setPage(0);
+    setFilterType(event);
+  };
 
   const handleEdit = (event) => {
     console.log('@@@@@@@@@@@@@@@@@edit', event.target.value);
@@ -155,9 +173,10 @@ export default function UserPage() {
   const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
 
   const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
+  const filteredTypeUsers = applyTypeFilter(USERLIST, getComparator(order, orderBy), filterType);
 
   const isNotFound = !filteredUsers.length && !!filterName;
-
+  console.log('newSelectednewSelected', selected.length);
   return (
     <>
       <Helmet>
@@ -175,7 +194,23 @@ export default function UserPage() {
         </Stack>
 
         <Card>
-          <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
+          <TablePagination
+            className="paginationCss"
+            rowsPerPageOptions={[5, 10, 15, 20]}
+            component="div"
+            count={USERLIST.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+          <UserListToolbar
+            numSelected={selected.length}
+            filterType={filterType}
+            filterName={filterName}
+            onFilterName={handleFilterByName}
+            onFilterType={handleFilterByType}
+          />
 
           <Scrollbar>
             <TableContainer sx={{ minWidth: 800 }}>
@@ -190,42 +225,83 @@ export default function UserPage() {
                   onSelectAllClick={handleSelectAllClick}
                 />
                 <TableBody>
-                  {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, image, type, status, avatarUrl, Action } = row;
-                    const selectedUser = selected.indexOf(name) !== -1;
+                  {filterName !== ''
+                    ? filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                        const { id, name, image, type, status, avatarUrl, Action } = row;
+                        const selectedUser = selected.indexOf(name) !== -1;
+                        console.log('selectedUserselectedUser', selectedUser);
+                        return (
+                          <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
+                            <TableCell padding="checkbox">
+                              <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name, type)} />
+                            </TableCell>
 
-                    return (
-                      <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
-                        <TableCell padding="checkbox">
-                          <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name)} />
-                        </TableCell>
+                            <TableCell align="left">{id}</TableCell>
+                            <TableCell component="th" scope="row" padding="none">
+                              <Stack direction="row" alignItems="center" spacing={2}>
+                                <Avatar alt={name} src={avatarUrl} />
+                                <Typography variant="subtitle2" noWrap>
+                                  {name}
+                                </Typography>
+                              </Stack>
+                            </TableCell>
+                            <div style={{ display: 'none' }}>{setCount(selectedUser)}</div>
+                            <TableCell align="left">{image}</TableCell>
 
-                        <TableCell align="left">{id}</TableCell>
-                        <TableCell component="th" scope="row" padding="none">
-                          <Stack direction="row" alignItems="center" spacing={2}>
-                            <Avatar alt={name} src={avatarUrl} />
-                            <Typography variant="subtitle2" noWrap>
-                              {name}
-                            </Typography>
-                          </Stack>
-                        </TableCell>
+                            <TableCell align="left">{type}</TableCell>
 
-                        <TableCell align="left">{image}</TableCell>
+                            <TableCell align="left">
+                              <Label color={(status === 'banned' && 'error') || 'success'}>
+                                {sentenceCase(status)}
+                              </Label>
+                            </TableCell>
 
-                        <TableCell align="left">{type ? 'Yes' : 'No'}</TableCell>
+                            <TableCell align="right">
+                              <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
+                                <Iconify icon={'eva:more-vertical-fill'} />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    : filteredTypeUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+                        const { id, name, image, type, status, avatarUrl, Action } = row;
+                        const selectedUser = selected.indexOf(name) !== -1;
 
-                        <TableCell align="left">
-                          <Label color={(status === 'banned' && 'error') || 'success'}>{sentenceCase(status)}</Label>
-                        </TableCell>
+                        return (
+                          <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
+                            <TableCell padding="checkbox">
+                              <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name, type)} />
+                            </TableCell>
 
-                        <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
-                            <Iconify icon={'eva:more-vertical-fill'} />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
+                            <TableCell align="left">{id}</TableCell>
+                            <TableCell component="th" scope="row" padding="none">
+                              <Stack direction="row" alignItems="center" spacing={2}>
+                                <Avatar alt={name} src={avatarUrl} />
+                                <Typography variant="subtitle2" noWrap>
+                                  {name}
+                                </Typography>
+                              </Stack>
+                            </TableCell>
+
+                            <TableCell align="left">{image}</TableCell>
+
+                            <TableCell align="left">{type}</TableCell>
+
+                            <TableCell align="left">
+                              <Label color={(status === 'banned' && 'error') || 'success'}>
+                                {sentenceCase(status)}
+                              </Label>
+                            </TableCell>
+
+                            <TableCell align="right">
+                              <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
+                                <Iconify icon={'eva:more-vertical-fill'} />
+                              </IconButton>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                   {emptyRows > 0 && (
                     <TableRow style={{ height: 53 * emptyRows }}>
                       <TableCell colSpan={6} />
@@ -261,7 +337,7 @@ export default function UserPage() {
           </Scrollbar>
 
           <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
+            rowsPerPageOptions={[5, 10, 15, 20]}
             component="div"
             count={USERLIST.length}
             rowsPerPage={rowsPerPage}
@@ -269,6 +345,8 @@ export default function UserPage() {
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
+          {selected.length === 0 ? '' : <h3>Bulk Action &emsp;{selected.length}</h3>}
+          {console.log('$$$$$$$$$$$', count)}
         </Card>
       </Container>
 

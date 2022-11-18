@@ -1,7 +1,21 @@
+import React from 'react';
 import PropTypes from 'prop-types';
-// @mui
+
 import { styled, alpha } from '@mui/material/styles';
-import { Toolbar, Tooltip, IconButton, Typography, OutlinedInput, InputAdornment } from '@mui/material';
+import {
+  Toolbar,
+  Tooltip,
+  IconButton,
+  SelectChangeEvent,
+  Typography,
+  OutlinedInput,
+  FormControl,
+  Select,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  FormHelperText,
+} from '@mui/material';
 // component
 import Iconify from '../../../components/iconify';
 
@@ -36,9 +50,15 @@ UserListToolbar.propTypes = {
   numSelected: PropTypes.number,
   filterName: PropTypes.string,
   onFilterName: PropTypes.func,
+  onFilterType: PropTypes.func,
 };
 
-export default function UserListToolbar({ numSelected, filterName, onFilterName }) {
+export default function UserListToolbar({ numSelected, filterName, onFilterName, onFilterType }) {
+  const [types, setTypes] = React.useState('');
+  const handleChange = (event) => {
+    onFilterType(event.target.value);
+    setTypes(event.target.value);
+  };
   return (
     <StyledRoot
       sx={{
@@ -53,16 +73,32 @@ export default function UserListToolbar({ numSelected, filterName, onFilterName 
           {numSelected} selected
         </Typography>
       ) : (
-        <StyledSearch
-          value={filterName}
-          onChange={onFilterName}
-          placeholder="Search user..."
-          startAdornment={
-            <InputAdornment position="start">
-              <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled', width: 20, height: 20 }} />
-            </InputAdornment>
-          }
-        />
+        <>
+          <StyledSearch
+            value={filterName}
+            onChange={onFilterName}
+            placeholder="Search name..."
+            startAdornment={
+              <InputAdornment position="start">
+                <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled', width: 20, height: 20 }} />
+              </InputAdornment>
+            }
+          />
+          &emsp;
+          <FormControl sx={{ m: 1, minWidth: 120 }}>
+            <InputLabel id="demo-simple-select-autowidth-label">Type</InputLabel>
+            <Select
+              labelId="demo-simple-select-helper-label"
+              id="demo-simple-select-helper"
+              value={types}
+              label="Type"
+              onChange={handleChange}
+            >
+              <MenuItem value="Private">Private</MenuItem>
+              <MenuItem value="Group">Group</MenuItem>
+            </Select>
+          </FormControl>
+        </>
       )}
 
       {numSelected > 0 ? (
@@ -72,11 +108,7 @@ export default function UserListToolbar({ numSelected, filterName, onFilterName 
           </IconButton>
         </Tooltip>
       ) : (
-        <Tooltip title="Filter list">
-          <IconButton>
-            <Iconify icon="ic:round-filter-list" />
-          </IconButton>
-        </Tooltip>
+        ''
       )}
     </StyledRoot>
   );
