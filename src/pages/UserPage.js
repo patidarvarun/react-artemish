@@ -23,8 +23,19 @@ import {
   IconButton,
   TableContainer,
   TablePagination,
+  Box,
+  FormControl,
+  Select,
+  Modal,
+  InputBase,
+  styled,
+  Divider,
 } from '@mui/material';
+// eslint-disable-next-line import/no-unresolved
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 // components
+
 import Label from '../components/label';
 import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
@@ -32,8 +43,19 @@ import Scrollbar from '../components/scrollbar';
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
 // mock
 import USERLIST from '../_mock/user';
-
 // ----------------------------------------------------------------------
+
+const style = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+};
 
 const TABLE_HEAD = [
   { id: 'id', label: 'ID', alignRight: false },
@@ -86,8 +108,42 @@ function applyTypeFilter(array, comparator, query) {
   }
   return stabilizedThis.map((el) => el[0]);
 }
-
+const BootstrapInput = styled(InputBase)(({ theme }) => ({
+  'label + &': {
+    marginTop: theme.spacing(3),
+  },
+  '& .MuiInputBase-input': {
+    borderRadius: 4,
+    position: 'relative',
+    backgroundColor: theme.palette.background.paper,
+    border: '1px solid #ced4da',
+    fontSize: 16,
+    padding: '10px 26px 10px 12px',
+    transition: theme.transitions.create(['border-color', 'box-shadow']),
+    // Use the system font instead of the default Roboto font.
+    fontFamily: [
+      '-apple-system',
+      'BlinkMacSystemFont',
+      '"Segoe UI"',
+      'Roboto',
+      '"Helvetica Neue"',
+      'Arial',
+      'sans-serif',
+      '"Apple Color Emoji"',
+      '"Segoe UI Emoji"',
+      '"Segoe UI Symbol"',
+    ].join(','),
+    '&:focus': {
+      borderRadius: 4,
+      borderColor: '#80bdff',
+      boxShadow: '0 0 0 0.2rem rgba(0,123,255,.25)',
+    },
+  },
+}));
 export default function UserPage() {
+  const [editable, setEditable] = useState('');
+  const [statuss, setStatuss] = useState('');
+
   const [open, setOpen] = useState(null);
 
   const [page, setPage] = useState(0);
@@ -100,17 +156,34 @@ export default function UserPage() {
 
   const [filterName, setFilterName] = useState('');
   const [filterType, setFilterType] = useState('');
-  const [count, setCount] = useState('');
+  const label = { inputProps: { 'aria-label': 'Checkbox demo' } };
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [openn, setOpenn] = useState(false);
+  const handleOpen = () => setOpenn(true);
+  const handleClosee = () => {
+    setOpenn(false);
+    window.location.replace('/dashboard/products');
+  };
+
   const navigate = useNavigate();
 
+  const handleStatusChange = (event) => {
+    setStatuss(event.target.value);
+  };
+
+  const handleChange = (event) => {
+    setEditable(event.target.value);
+  };
   const handleOpenMenu = (event) => {
     setOpen(event.currentTarget);
   };
 
   const handleCloseMenu = () => {
     setOpen(null);
+  };
+  const handleUpdate = () => {
+    console.log('statuss$$$$$', statuss, 'selected!!!!!!', selected);
   };
 
   const handleRequestSort = (event, property) => {
@@ -121,18 +194,18 @@ export default function UserPage() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = USERLIST.map((n) => n.name);
+      const newSelecteds = USERLIST.map((n) => n.id);
       setSelected(newSelecteds);
       return;
     }
     setSelected([]);
   };
 
-  const handleClick = (event, name) => {
-    const selectedIndex = selected.indexOf(name);
+  const handleClick = (event, name, type, id) => {
+    const selectedIndex = selected.indexOf(id);
     let newSelected = [];
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
+      newSelected = newSelected.concat(selected, id);
     } else if (selectedIndex === 0) {
       newSelected = newSelected.concat(selected.slice(1));
     } else if (selectedIndex === selected.length - 1) {
@@ -142,7 +215,15 @@ export default function UserPage() {
     }
     setSelected(newSelected);
   };
+  const handleAllEdit = () => {
+    handleOpen();
+    console.log('edit@@@@@@@', selected);
+  };
 
+  const handleAllDelete = () => {
+    console.log('Deleteee', selected);
+    window.location.replace('/dashboard/products');
+  };
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -176,7 +257,7 @@ export default function UserPage() {
   const filteredTypeUsers = applyTypeFilter(USERLIST, getComparator(order, orderBy), filterType);
 
   const isNotFound = !filteredUsers.length && !!filterName;
-  console.log('newSelectednewSelected', selected.length);
+
   return (
     <>
       <Helmet>
@@ -227,13 +308,16 @@ export default function UserPage() {
                 <TableBody>
                   {filterName !== ''
                     ? filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                        const { id, name, image, type, status, avatarUrl, Action } = row;
-                        const selectedUser = selected.indexOf(name) !== -1;
-                        console.log('selectedUserselectedUser', selectedUser);
+                        const { id, name, image, type, status, avatarUrl } = row;
+                        const selectedUser = selected.indexOf(id) !== -1;
+
                         return (
                           <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
                             <TableCell padding="checkbox">
-                              <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name, type)} />
+                              <Checkbox
+                                checked={selectedUser}
+                                onChange={(event) => handleClick(event, name, type, id)}
+                              />
                             </TableCell>
 
                             <TableCell align="left">{id}</TableCell>
@@ -245,13 +329,17 @@ export default function UserPage() {
                                 </Typography>
                               </Stack>
                             </TableCell>
-                            <div style={{ display: 'none' }}>{setCount(selectedUser)}</div>
+
                             <TableCell align="left">{image}</TableCell>
 
                             <TableCell align="left">{type}</TableCell>
 
                             <TableCell align="left">
-                              <Label color={(status === 'banned' && 'error') || 'success'}>
+                              <Label
+                                color={
+                                  (status === 'Pending' && 'error') || (status === 'Draft' && 'warning') || 'success'
+                                }
+                              >
                                 {sentenceCase(status)}
                               </Label>
                             </TableCell>
@@ -265,13 +353,16 @@ export default function UserPage() {
                         );
                       })
                     : filteredTypeUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                        const { id, name, image, type, status, avatarUrl, Action } = row;
-                        const selectedUser = selected.indexOf(name) !== -1;
+                        const { id, name, image, type, status, avatarUrl } = row;
+                        const selectedUser = selected.indexOf(id) !== -1;
 
                         return (
                           <TableRow hover key={id} tabIndex={-1} role="checkbox" selected={selectedUser}>
                             <TableCell padding="checkbox">
-                              <Checkbox checked={selectedUser} onChange={(event) => handleClick(event, name, type)} />
+                              <Checkbox
+                                checked={selectedUser}
+                                onChange={(event) => handleClick(event, name, type, id)}
+                              />
                             </TableCell>
 
                             <TableCell align="left">{id}</TableCell>
@@ -289,7 +380,11 @@ export default function UserPage() {
                             <TableCell align="left">{type}</TableCell>
 
                             <TableCell align="left">
-                              <Label color={(status === 'banned' && 'error') || 'success'}>
+                              <Label
+                                color={
+                                  (status === 'Pending' && 'error') || (status === 'Draft' && 'warning') || 'success'
+                                }
+                              >
                                 {sentenceCase(status)}
                               </Label>
                             </TableCell>
@@ -345,10 +440,79 @@ export default function UserPage() {
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
-          {selected.length === 0 ? '' : <h3>Bulk Action &emsp;{selected.length}</h3>}
-          {console.log('$$$$$$$$$$$', count)}
+          {selected.length === 0 ? (
+            ''
+          ) : (
+            <div>
+              <div style={{ display: 'flex', background: '#D1E9FC' }}>
+                <Checkbox {...label} defaultChecked color="secondary" />
+                <p style={{ color: '#2065D1', marginTop: '23px', fontSize: '17px' }}>{selected?.length} selected </p>
+                &emsp;
+                <Box sx={{ minWidth: 120 }}>
+                  <FormControl sx={{ m: 1 }} variant="standard">
+                    <Select
+                      labelId="demo-customized-select-label"
+                      id="demo-customized-select"
+                      value={editable}
+                      onChange={handleChange}
+                      input={<BootstrapInput />}
+                    >
+                      <MenuItem value="edit">
+                        <Button onClick={handleAllEdit}>
+                          <EditIcon /> &nbsp;&nbsp;Edit{' '}
+                        </Button>
+                      </MenuItem>
+                      <MenuItem value="delete">
+                        <Button onClick={handleAllDelete}>
+                          <DeleteOutlineIcon /> &nbsp; Delete{' '}
+                        </Button>
+                      </MenuItem>
+                    </Select>
+                  </FormControl>
+                </Box>
+              </div>
+            </div>
+          )}
         </Card>
       </Container>
+
+      <Modal
+        open={openn}
+        onClose={handleClosee}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <FormControl sx={{ m: 1 }} variant="standard">
+            <span style={{ display: 'flex' }}>
+              <h4>Status</h4>&emsp;
+              <Select
+                labelId="demo-customized-select-label"
+                id="demo-customized-select"
+                value={statuss}
+                onChange={handleStatusChange}
+                input={<BootstrapInput />}
+              >
+                <MenuItem value="publish">Publish</MenuItem>
+                <MenuItem value="draft">Draft</MenuItem>
+                <MenuItem value="pending">Pending</MenuItem>
+              </Select>
+            </span>
+          </FormControl>
+          <Divider />
+          <div style={{ textAlign: 'end', marginTop: '10px' }}>
+            {statuss === '' ? (
+              <Button variant="contained" disabled>
+                Update
+              </Button>
+            ) : (
+              <Button style={{ background: '#229A16' }} variant="contained" onClick={handleUpdate}>
+                Update
+              </Button>
+            )}
+          </div>
+        </Box>
+      </Modal>
 
       <Popover
         open={Boolean(open)}
@@ -372,7 +536,6 @@ export default function UserPage() {
           <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
           Edit
         </MenuItem>
-
         <MenuItem sx={{ color: 'error.main' }} onClick={handleDelete}>
           <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
           Delete

@@ -61,47 +61,44 @@ export default function UserListToolbar({ numSelected, filterName, onFilterName,
   };
   return (
     <StyledRoot
-      sx={{
-        ...(numSelected > 0 && {
-          color: 'primary.main',
-          bgcolor: 'primary.lighter',
-        }),
-      }}
+    // sx={{
+    //   ...(numSelected > 0 && {
+    //     color: 'primary.main',
+    //     bgcolor: 'primary.lighter',
+    //   }),
+    // }}
     >
-      {numSelected > 0 ? (
+      {/* {numSelected > 0 ? (
         <Typography component="div" variant="subtitle1">
           {numSelected} selected
         </Typography>
-      ) : (
-        <>
-          <StyledSearch
-            value={filterName}
-            onChange={onFilterName}
-            placeholder="Search name..."
-            startAdornment={
-              <InputAdornment position="start">
-                <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled', width: 20, height: 20 }} />
-              </InputAdornment>
-            }
-          />
-          &emsp;
-          <FormControl sx={{ m: 1, minWidth: 120 }}>
-            <InputLabel id="demo-simple-select-autowidth-label">Type</InputLabel>
-            <Select
-              labelId="demo-simple-select-helper-label"
-              id="demo-simple-select-helper"
-              value={types}
-              label="Type"
-              onChange={handleChange}
-            >
-              <MenuItem value="Private">Private</MenuItem>
-              <MenuItem value="Group">Group</MenuItem>
-            </Select>
-          </FormControl>
-        </>
-      )}
-
-      {numSelected > 0 ? (
+      ) : ( */}
+      <StyledSearch
+        value={filterName}
+        onChange={onFilterName}
+        placeholder="Search name..."
+        startAdornment={
+          <InputAdornment position="start">
+            <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled', width: 20, height: 20 }} />
+          </InputAdornment>
+        }
+      />
+      &emsp;
+      <FormControl sx={{ m: 1, minWidth: 120 }}>
+        <InputLabel id="demo-simple-select-autowidth-label">Type</InputLabel>
+        <Select
+          labelId="demo-simple-select-helper-label"
+          id="demo-simple-select-helper"
+          value={types}
+          label="Type"
+          onChange={handleChange}
+        >
+          <MenuItem value="Private">Private</MenuItem>
+          <MenuItem value="Group">Group</MenuItem>
+        </Select>
+      </FormControl>
+      {/* )} */}
+      {/* {numSelected > 0 ? (
         <Tooltip title="Delete">
           <IconButton>
             <Iconify icon="eva:trash-2-fill" />
@@ -109,7 +106,7 @@ export default function UserListToolbar({ numSelected, filterName, onFilterName,
         </Tooltip>
       ) : (
         ''
-      )}
+      )} */}
     </StyledRoot>
   );
 }
